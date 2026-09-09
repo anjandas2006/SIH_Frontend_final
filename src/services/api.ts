@@ -1,4 +1,16 @@
-const API_BASE = '/api';
+const BACKEND_BASE = (import.meta.env.VITE_BACKEND_URL || 'https://sih-backend-delta.vercel.app').replace(/\/$/, '');
+const API_BASE = import.meta.env.DEV ? '/api' : `${BACKEND_BASE}/api`;
+
+export function getEvidenceUrl(path?: string | null): string {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  const clean = path.startsWith('/') ? path : `/${path}`;
+  if (import.meta.env.DEV) {
+    return clean;
+  }
+  return `${BACKEND_BASE}${clean}`;
+}
+
 
 export const api = {
   // Auth

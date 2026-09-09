@@ -26,14 +26,7 @@ export const SimulationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [activeAlertsCount, setActiveAlertsCount] = useState(6);
   const [latestAlert, setLatestAlert] = useState<any | null>(null);
 
-  // Poll unread count on startup
-  useEffect(() => {
-    api.getUnreadAlertsCount().then(res => {
-      setActiveAlertsCount(res.unacknowledged_count || 6);
-    }).catch(() => {});
-  }, []);
-
-  // WebSockets
+  // WebSockets message callbacks
   const handleFleetMessage = useCallback((data: any) => {
     if (data.type === 'FLEET_UPDATE' && Array.isArray(data.buses)) {
       setLiveBuses(data.buses);
@@ -53,9 +46,65 @@ export const SimulationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
   }, []);
 
-  useWebSocket('/ws/fleet', handleFleetMessage);
-  useWebSocket('/ws/events', handleEventsMessage);
-  useWebSocket('/ws/alerts', handleAlertsMessage);
+  // Initial and polling data synchronizers
+  const { isConnected: wsFleetConnected } = useWebSocket('/ws/fleet', handleFleetMessage);
+  const { isConnected: wsEventsConnected } = useWebSocket('/ws/events', handleEventsMessage);
+  const { isConnected: wsAlertsConnected } = useWebSocket('/ws/alerts', handleAlertsMessage);
+
+  // Fallback polling for live buses when WebSockets are disconnected
+  useEffect(() => {
+    const fetchFleet = () => {
+      api.getBuses().then(buses => {
+        if (Array.isArray(buses) && buses.length > 0) {
+          setLiveBuses(buses);
+        }
+      }).catch(() => {});
+    };
+
+    fetchFleet();
+
+    if (!wsFleetConnected) {
+      const interval = setInterval(fetchFleet, 4000);
+      return () => clearInterval(interval);
+    }
+  }, [wsFleetConnected]);
+
+  // Fallback polling for live traffic events when WebSockets are disconnected
+  useEffect(() => {
+    const fetchEvents = () => {
+      api.getTrafficEvents().then(events => {
+        if (Array.isArray(events) && events.length > 0) {
+          setLiveEvents(events.slice(0, 20));
+        }
+      }).catch(() => {});
+    };
+
+    fetchEvents();
+
+    if (!wsEventsConnected) {
+      const interval = setInterval(fetchEvents, 8000);
+      return () => clearInterval(interval);
+    }
+  }, [wsEventsConnected]);
+
+  // Fallback polling for unread alerts
+  useEffect(() => {
+    const fetchAlerts = () => {
+      api.getUnreadAlertsCount().then(res => {
+        if (res && res.unacknowledged_count !== undefined) {
+          setActiveAlertsCount(res.unacknowledged_count);
+        }
+      }).catch(() => {});
+    };
+
+    fetchAlerts();
+
+    if (!wsAlertsConnected) {
+      const interval = setInterval(fetchAlerts, 10000);
+      return () => clearInterval(interval);
+    }
+  }, [wsAlertsConnected]);
+
 
   const toggleSimulation = async () => {
     const nextRunning = !isRunning;

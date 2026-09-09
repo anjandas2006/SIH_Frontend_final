@@ -13,7 +13,7 @@ import {
   ShieldCheck,
   ChevronRight
 } from 'lucide-react';
-import { api } from '../services/api';
+import { api, getEvidenceUrl } from '../services/api';
 import { RoadDefectCluster } from '../types';
 import { EvidenceModal } from '../components/common/EvidenceModal';
 
@@ -214,7 +214,7 @@ export const RoadHealth: React.FC = () => {
               {/* Evidence Snapshot */}
               <div className="relative rounded-lg overflow-hidden border border-slate-800 aspect-video bg-black flex items-center justify-center">
                 <img
-                  src={selectedClusterDetail.cluster.evidence_image || '/evidence/sample_pothole.jpg'}
+                  src={getEvidenceUrl(selectedClusterDetail.cluster.evidence_image || '/evidence/sample_pothole.jpg')}
                   alt="Defect Evidence"
                   className="w-full h-full object-cover"
                 />

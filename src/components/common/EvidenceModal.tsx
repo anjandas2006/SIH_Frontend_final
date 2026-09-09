@@ -1,5 +1,7 @@
 import React from 'react';
 import { X, ExternalLink, ShieldCheck, MapPin, Calendar, Bus } from 'lucide-react';
+import { getEvidenceUrl } from '../../services/api';
+
 
 interface EvidenceModalProps {
   isOpen: boolean;
@@ -45,7 +47,7 @@ export const EvidenceModal: React.FC<EvidenceModalProps> = ({
         {/* Image & Overlay */}
         <div className="relative flex-1 bg-black flex items-center justify-center p-2 min-h-[350px]">
           <img
-            src={imageSrc}
+            src={getEvidenceUrl(imageSrc)}
             alt={title}
             className="max-h-[55vh] w-auto object-contain rounded-lg border border-slate-800 shadow-lg"
           />
