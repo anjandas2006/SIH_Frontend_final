@@ -5,97 +5,128 @@ import {
   Bus,
   Map,
   Cpu,
-  Activity,
-  TrafficCone,
-  AlertTriangle,
-  Bell,
-  BarChart3,
-  FileText,
-  Settings,
-  Radio,
   ShieldAlert,
-  Compass
+  BarChart3
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { useSimulation } from '../../context/SimulationContext';
 
 export const Sidebar: React.FC = () => {
   const { user } = useAuth();
-  const { activeAlertsCount } = useSimulation();
 
-  const navItems = [
-    { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { to: '/fleet', label: 'Fleet Management', icon: Bus },
-    { to: '/live-map', label: 'Urban Map (GIS)', icon: Map },
-    { to: '/video-analysis', label: 'AI Video Analysis', icon: Cpu },
-    { to: '/road-health', label: 'Road Health & Defect Clusters', icon: Activity },
-    { to: '/traffic', label: 'Traffic Intelligence', icon: TrafficCone },
-    { to: '/incidents', label: 'Incidents & Hit-and-Run', icon: ShieldAlert },
-    { to: '/alerts', label: 'Alerts Center', icon: Bell, badge: activeAlertsCount },
-    { to: '/routes', label: 'Routes & OD Flow', icon: Compass },
-    { to: '/analytics', label: 'Analytics & Insights', icon: BarChart3 },
-    { to: '/reports', label: 'Reports & Export', icon: FileText },
-    { to: '/settings', label: 'System Settings', icon: Settings },
+  // The 6 consolidated primary modules requested by user
+  const primaryNavItems = [
+    {
+      to: '/dashboard',
+      label: 'Command Dashboard',
+      description: 'Executive overview & RM-PCI',
+      icon: LayoutDashboard
+    },
+    {
+      to: '/fleet',
+      label: 'Fleet Management',
+      description: 'Dashcam units & live telemetry',
+      icon: Bus
+    },
+    {
+      to: '/live-map',
+      label: 'Urban Map (GIS)',
+      description: 'Carriageway geospatial stream',
+      icon: Map
+    },
+    {
+      to: '/video-analysis',
+      label: 'AI Video Analysis',
+      description: 'Computer vision & edge studio',
+      icon: Cpu
+    },
+    {
+      to: '/road-intelligence',
+      label: 'Road, Traffic & Incidents',
+      description: 'Merged defects, traffic & hit-and-run',
+      icon: ShieldAlert,
+      tag: 'MERGED'
+    },
+    {
+      to: '/analytics-reports',
+      label: 'Analytics & Reports',
+      description: 'Trends, OD flow & UKPMS export',
+      icon: BarChart3,
+      tag: 'MERGED'
+    },
   ];
 
   return (
-    <aside className="w-64 bg-slate-950 border-r border-slate-800 flex flex-col h-screen fixed left-0 top-0 z-40">
+    <aside className="w-64 bg-white dark:bg-[#111c2e] border-r border-slate-200 dark:border-slate-800 flex flex-col h-screen fixed left-0 top-0 z-40 text-slate-700 dark:text-slate-200 shadow-sm font-sans transition-colors duration-200">
       {/* Brand Header */}
-      <div className="h-16 flex items-center px-5 border-b border-slate-800 gap-3">
-        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20">
-          <Bus className="w-5 h-5" />
+      <div className="h-16 flex items-center px-5 border-b border-slate-200 dark:border-slate-800 gap-3 bg-white dark:bg-[#111c2e]">
+        <div className="w-9 h-9 rounded-lg bg-[#063269] flex items-center justify-center text-white shadow-sm">
+          <Bus className="w-5 h-5 text-[#2ea3f2]" />
         </div>
-        <div>
+        <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="font-bold text-white text-base tracking-tight">BusSense AI</span>
-            <span className="text-[10px] bg-cyan-500/20 text-cyan-400 font-semibold px-1.5 py-0.5 rounded border border-cyan-500/30">v1.0</span>
+            <span className="font-heading font-extrabold text-[#063269] dark:text-white text-base tracking-tight truncate">
+              BusSense AI
+            </span>
+            <span className="text-[10px] bg-sky-50 dark:bg-sky-950/80 text-[#0284c7] dark:text-sky-400 font-bold px-1.5 py-0.5 rounded border border-sky-200 dark:border-sky-800">
+              URBAN
+            </span>
           </div>
-          <p className="text-[11px] text-slate-400 tracking-wider">Mobile Urban Intelligence</p>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate">Transit Fleet Edge Sensing</p>
         </div>
       </div>
 
-      {/* Navigation */}
+      {/* Primary Navigation */}
       <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-        <div className="px-3 pb-2 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-          Command Center
+        <div className="px-3 pb-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+          <span>Enterprise Modules</span>
+          <span className="text-[9px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
+            6 Unified Hubs
+          </span>
         </div>
-        {navItems.map((item) => {
+
+        {primaryNavItems.map((item) => {
           const Icon = item.icon;
           return (
             <NavLink
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
-                `flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all duration-150 ${
+                `group flex items-start gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all ${
                   isActive
-                    ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 font-semibold shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                    ? 'bg-blue-50/90 dark:bg-sky-950/70 text-[#0284c7] dark:text-sky-400 font-semibold border-l-3 border-[#0284c7] shadow-2xs'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60'
                 }`
               }
             >
-              <div className="flex items-center gap-3">
-                <Icon className="w-4 h-4" />
-                <span>{item.label}</span>
+              <Icon className="w-4 h-4 mt-0.5 shrink-0 text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-200" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <span className="truncate">{item.label}</span>
+                  {item.tag && (
+                    <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-amber-50 dark:bg-amber-950/80 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 font-bold">
+                      {item.tag}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-normal truncate mt-0.5">
+                  {item.description}
+                </p>
               </div>
-              {item.badge !== undefined && item.badge > 0 && (
-                <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-rose-500 text-white animate-pulse">
-                  {item.badge}
-                </span>
-              )}
             </NavLink>
           );
         })}
+
       </div>
 
-      {/* User Profile & Role Info */}
-      <div className="p-3 border-t border-slate-800 bg-slate-900/50">
-        <div className="flex items-center gap-3 px-2 py-2 rounded-lg bg-slate-900 border border-slate-800">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs">
+      {/* User Profile Card */}
+      <div className="p-3 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111c2e]">
+        <div className="flex items-center gap-3 px-2 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+          <div className="w-8 h-8 rounded-full bg-[#063269] flex items-center justify-center text-white font-bold text-xs shadow-inner">
             {user?.full_name.charAt(0) || 'A'}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-slate-200 truncate">{user?.full_name}</p>
-            <p className="text-[10px] text-cyan-400 font-medium truncate">{user?.role}</p>
+            <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{user?.full_name}</p>
+            <p className="text-[10px] text-[#0284c7] dark:text-sky-400 font-semibold truncate">{user?.role}</p>
           </div>
         </div>
       </div>

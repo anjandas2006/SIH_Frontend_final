@@ -10,7 +10,7 @@ export const MainLayout: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex">
+    <div className="min-h-screen bg-[#f8fafc] dark:bg-[#0b1320] text-slate-900 dark:text-slate-100 flex font-sans antialiased transition-colors duration-200">
       {/* Sidebar */}
       <Sidebar />
 
@@ -20,33 +20,33 @@ export const MainLayout: React.FC = () => {
 
         {/* Floating Real-Time Alert Notification Toast */}
         {latestAlert && (
-          <div className="fixed top-20 right-6 z-50 max-w-md bg-slate-900 border border-rose-500/50 rounded-xl shadow-2xl p-4 flex items-start gap-3 animate-in slide-in-from-top-4 duration-200">
-            <div className="p-2 rounded-lg bg-rose-500/20 text-rose-400 mt-0.5 animate-pulse">
+          <div className="fixed top-20 right-6 z-50 max-w-md bg-white dark:bg-[#111c2e] border border-rose-200 dark:border-rose-900 rounded-xl shadow-xl p-4 flex items-start gap-3 animate-in slide-in-from-top-4 duration-200">
+            <div className="p-2 rounded-lg bg-rose-50 dark:bg-rose-950 text-rose-600 dark:text-rose-400 mt-0.5">
               <AlertCircle className="w-5 h-5" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-rose-400 uppercase tracking-wide">
+                <span className="text-xs font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wide">
                   {latestAlert.severity || 'CRITICAL'} ALERT
                 </span>
                 <button
                   onClick={dismissLatestAlert}
-                  className="text-slate-400 hover:text-white p-0.5"
+                  className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-0.5"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
-              <p className="text-sm font-semibold text-white mt-0.5">{latestAlert.title}</p>
-              <p className="text-xs text-slate-300 mt-1 line-clamp-2">{latestAlert.message}</p>
+              <p className="text-sm font-semibold text-slate-900 dark:text-white mt-0.5">{latestAlert.title}</p>
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 line-clamp-2">{latestAlert.message}</p>
               <div className="mt-2.5 flex items-center justify-end gap-2">
                 <button
                   onClick={() => {
                     dismissLatestAlert();
-                    navigate('/alerts');
+                    navigate('/road-intelligence');
                   }}
-                  className="text-xs text-cyan-400 hover:text-cyan-300 font-medium flex items-center gap-1"
+                  className="text-xs text-[#0284c7] dark:text-sky-400 hover:underline font-semibold flex items-center gap-1"
                 >
-                  View Alert Center <ChevronRight className="w-3.5 h-3.5" />
+                  View in Intelligence Hub <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
@@ -54,7 +54,7 @@ export const MainLayout: React.FC = () => {
         )}
 
         {/* Page Content */}
-        <main className="flex-1 ml-64 p-6 overflow-y-auto bg-slate-950/60">
+        <main className="flex-1 ml-64 p-6 overflow-y-auto bg-[#f8fafc] dark:bg-[#0b1320] transition-colors duration-200">
           <Outlet />
         </main>
       </div>

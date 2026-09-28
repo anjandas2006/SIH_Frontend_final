@@ -259,5 +259,32 @@ export const api = {
       body: JSON.stringify(payload)
     });
     return res.json();
+  },
+
+  // RoadMetrics AI Intelligence API
+  async getRoadMetricsOverview() {
+    const res = await fetch(`${API_BASE}/roadmetrics/overview`);
+    if (!res.ok) throw new Error('Failed to load RoadMetrics overview');
+    return res.json();
+  },
+
+  async calculateBudget(networkKm: number, surveyFrequency: number = 4, roadType: string = 'urban_mixed') {
+    const res = await fetch(`${API_BASE}/roadmetrics/calculate-budget`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        network_km: networkKm,
+        survey_frequency_per_year: surveyFrequency,
+        road_type: roadType
+      })
+    });
+    if (!res.ok) throw new Error('Budget calculation failed');
+    return res.json();
+  },
+
+  async getRoadMetricsRatings() {
+    const res = await fetch(`${API_BASE}/roadmetrics/ratings`);
+    if (!res.ok) throw new Error('Failed to fetch RoadMetrics ratings');
+    return res.json();
   }
 };

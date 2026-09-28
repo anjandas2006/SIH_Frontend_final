@@ -20,7 +20,7 @@ import { Bus } from '../types';
 
 export const Fleet: React.FC = () => {
   const navigate = useNavigate();
-  const { liveBuses } = useSimulation();
+  const { liveBuses, systemMode } = useSimulation();
   const [buses, setBuses] = useState<Bus[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -34,8 +34,17 @@ export const Fleet: React.FC = () => {
     }).catch(() => setLoading(false));
   }, []);
 
-  // Merge with live telemetry if available
+  // Merge with live telemetry if available or mark offline if in live mode without hardware connection
   const displayBuses = buses.map((b) => {
+    if (systemMode === 'live') {
+      return {
+        ...b,
+        status: 'OFFLINE' as any,
+        camera_status: 'DISCONNECTED',
+        ai_status: 'OFFLINE',
+        speed_kmh: 0
+      };
+    }
     const live = liveBuses.find((lb) => lb.bus_number === b.bus_number);
     if (live) {
       return {
@@ -64,16 +73,16 @@ export const Fleet: React.FC = () => {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-slate-800 dark:text-slate-100 font-sans">
       {/* Header & Controls */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2.5">
-            <BusIcon className="w-5 h-5 text-cyan-400" />
+          <h1 className="text-2xl font-heading font-extrabold text-[#063269] dark:text-white tracking-tight flex items-center gap-2.5">
+            <BusIcon className="w-6 h-6 text-[#0284c7] dark:text-sky-400" />
             <span>Fleet Management & Edge AI Telemetry</span>
           </h1>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Real-time monitoring of 20 mobile urban sensor units with 5-camera optical arrays
+          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+            Real-time monitoring of {systemMode === 'live' ? '0 active units (Standby)' : '20 mobile urban sensor units'} with 5-camera optical arrays
           </p>
         </div>
 
@@ -86,14 +95,14 @@ export const Fleet: React.FC = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search bus, plate or route..."
-              className="pl-9 pr-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 w-56"
+              className="pl-9 pr-3 py-1.5 rounded-lg bg-white border border-slate-300 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0284c7] w-56 shadow-2xs"
             />
           </div>
 
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-cyan-500"
+            className="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-xs text-slate-700 focus:outline-none focus:border-[#0284c7] shadow-2xs"
           >
             <option value="ALL">All Statuses</option>
             <option value="ACTIVE">Active (Online)</option>
@@ -102,16 +111,22 @@ export const Fleet: React.FC = () => {
           </select>
 
           {/* View toggle */}
-          <div className="flex items-center bg-slate-900 border border-slate-800 rounded-lg p-0.5">
+          <div className="flex items-center bg-slate-100 border border-slate-200 rounded-lg p-0.5 shadow-2xs">
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-cyan-500 text-slate-950' : 'text-slate-400 hover:text-white'}`}
+              className={`p-1.5 rounded transition-colors ${
+                viewMode === 'grid' ? 'bg-white text-[#0284c7] shadow-2xs font-semibold' : 'text-slate-500 hover:text-slate-800'
+              }`}
+              title="Grid View"
             >
               <LayoutGrid className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode('table')}
-              className={`p-1.5 rounded ${viewMode === 'table' ? 'bg-cyan-500 text-slate-950' : 'text-slate-400 hover:text-white'}`}
+              className={`p-1.5 rounded transition-colors ${
+                viewMode === 'table' ? 'bg-white text-[#0284c7] shadow-2xs font-semibold' : 'text-slate-500 hover:text-slate-800'
+              }`}
+              title="Table View"
             >
               <List className="w-4 h-4" />
             </button>
@@ -126,71 +141,71 @@ export const Fleet: React.FC = () => {
             <div
               key={bus.id}
               onClick={() => navigate(`/fleet/${bus.bus_number}`)}
-              className="bg-slate-900 border border-slate-800 hover:border-cyan-500/50 rounded-xl p-4 transition-all shadow-lg hover:shadow-cyan-500/10 cursor-pointer flex flex-col justify-between group"
+              className="bg-white border border-slate-200 hover:border-slate-300 rounded-xl p-4 transition-all shadow-sm hover:shadow cursor-pointer flex flex-col justify-between group"
             >
               {/* Card Header */}
               <div>
                 <div className="flex items-start justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold text-xs">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-sky-50 border border-sky-200 flex items-center justify-center text-[#0284c7] font-bold text-xs shadow-2xs">
                       {bus.bus_number.split('-')[1]}
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-white group-hover:text-cyan-400 transition-colors">
+                      <h3 className="text-sm font-bold text-slate-900 group-hover:text-[#0284c7] transition-colors">
                         {bus.bus_number}
                       </h3>
-                      <p className="text-[10px] text-slate-400 font-mono">{bus.registration_number}</p>
+                      <p className="text-[10px] text-slate-500 font-mono">{bus.registration_number}</p>
                     </div>
                   </div>
 
                   <span
                     className={`px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 ${
                       bus.status === 'ACTIVE'
-                        ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                         : bus.status === 'MAINTENANCE'
-                        ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
-                        : 'bg-slate-800 text-slate-400 border border-slate-700'
+                        ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                        : 'bg-slate-100 text-slate-600 border border-slate-200'
                     }`}
                   >
-                    <span className={`w-1.5 h-1.5 rounded-full ${bus.status === 'ACTIVE' ? 'bg-emerald-400 animate-pulse' : 'bg-slate-400'}`}></span>
+                    <span className={`w-1.5 h-1.5 rounded-full ${bus.status === 'ACTIVE' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`}></span>
                     {bus.status}
                   </span>
                 </div>
 
                 {/* Route Info */}
-                <div className="p-2 rounded-lg bg-slate-950 border border-slate-800/80 my-3">
-                  <p className="text-[10px] text-slate-400 uppercase font-semibold">Assigned Route</p>
-                  <p className="text-xs font-semibold text-slate-200 truncate mt-0.5">
+                <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 my-3">
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold">Assigned Route</p>
+                  <p className="text-xs font-semibold text-slate-800 truncate mt-0.5">
                     {bus.route_name || 'Downtown Urban Corridor'}
                   </p>
-                  <p className="text-[10px] text-cyan-400 font-mono mt-0.5">{bus.route_code || 'R-101'}</p>
+                  <p className="text-[10px] text-[#0284c7] font-mono font-semibold mt-0.5">{bus.route_code || 'R-101'}</p>
                 </div>
 
                 {/* Live Stats */}
                 <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="flex items-center gap-1.5 text-slate-300">
-                    <Gauge className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>Speed: <strong>{bus.speed_kmh} km/h</strong></span>
+                  <div className="flex items-center gap-1.5 text-slate-600">
+                    <Gauge className="w-3.5 h-3.5 text-[#0284c7]" />
+                    <span>Speed: <strong className="text-slate-900">{bus.speed_kmh} km/h</strong></span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-slate-300">
-                    <Cpu className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Events: <strong>{bus.events_today_count}</strong></span>
+                  <div className="flex items-center gap-1.5 text-slate-600">
+                    <Cpu className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Events: <strong className="text-slate-900">{bus.events_today_count}</strong></span>
                   </div>
                 </div>
 
                 {/* Camera & AI Status Indicators */}
-                <div className="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
+                <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
                   <div className="flex items-center gap-1.5">
                     <Video className="w-3.5 h-3.5 text-slate-400" />
-                    <span className="text-slate-400">Cameras:</span>
-                    <span className={`font-semibold ${bus.camera_status === 'ONLINE' ? 'text-emerald-400' : 'text-amber-400'}`}>
+                    <span className="text-slate-500">Cameras:</span>
+                    <span className={`font-semibold ${bus.camera_status === 'ONLINE' ? 'text-emerald-700' : 'text-amber-700'}`}>
                       {bus.camera_status}
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <Wifi className="w-3.5 h-3.5 text-slate-400" />
-                    <span className="text-slate-400">Edge AI:</span>
-                    <span className={`font-semibold ${bus.ai_status === 'ONLINE' ? 'text-cyan-400' : 'text-slate-400'}`}>
+                    <span className="text-slate-500">Edge AI:</span>
+                    <span className={`font-semibold ${bus.ai_status === 'ONLINE' ? 'text-[#0284c7]' : 'text-slate-500'}`}>
                       {bus.ai_status}
                     </span>
                   </div>
@@ -198,7 +213,7 @@ export const Fleet: React.FC = () => {
               </div>
 
               {/* Action Button */}
-              <div className="mt-4 pt-2 border-t border-slate-800 flex items-center justify-between text-xs text-cyan-400 font-medium group-hover:text-cyan-300">
+              <div className="mt-4 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs text-[#0284c7] font-semibold group-hover:text-[#0369a1]">
                 <span>View 5-Camera Feed</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
@@ -207,9 +222,9 @@ export const Fleet: React.FC = () => {
         </div>
       ) : (
         /* Table View */
-        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800">
+            <thead className="bg-slate-50 text-slate-500 uppercase font-semibold border-b border-slate-200">
               <tr>
                 <th className="px-4 py-3">Bus ID</th>
                 <th className="px-4 py-3">Plate</th>
@@ -222,29 +237,31 @@ export const Fleet: React.FC = () => {
                 <th className="px-4 py-3 text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-slate-100">
               {filtered.map((bus) => (
                 <tr
                   key={bus.id}
                   onClick={() => navigate(`/fleet/${bus.bus_number}`)}
-                  className="hover:bg-slate-800/50 cursor-pointer transition-colors"
+                  className="hover:bg-slate-50 cursor-pointer transition-colors"
                 >
-                  <td className="px-4 py-3 font-bold text-white">{bus.bus_number}</td>
-                  <td className="px-4 py-3 font-mono text-slate-400">{bus.registration_number}</td>
-                  <td className="px-4 py-3 text-slate-300">{bus.route_name || 'Corridor R-101'}</td>
+                  <td className="px-4 py-3 font-bold text-slate-900">{bus.bus_number}</td>
+                  <td className="px-4 py-3 font-mono text-slate-500">{bus.registration_number}</td>
+                  <td className="px-4 py-3 text-slate-700">{bus.route_name || 'Corridor R-101'}</td>
                   <td className="px-4 py-3">
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                      bus.status === 'ACTIVE' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-400'
+                      bus.status === 'ACTIVE'
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        : 'bg-slate-100 text-slate-600 border border-slate-200'
                     }`}>
                       {bus.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 font-mono">{bus.speed_kmh} km/h</td>
-                  <td className="px-4 py-3 font-semibold text-emerald-400">{bus.camera_status}</td>
-                  <td className="px-4 py-3 font-semibold text-cyan-400">{bus.ai_status}</td>
-                  <td className="px-4 py-3 font-bold text-amber-400">{bus.events_today_count}</td>
+                  <td className="px-4 py-3 font-mono text-slate-800">{bus.speed_kmh} km/h</td>
+                  <td className="px-4 py-3 font-semibold text-emerald-700">{bus.camera_status}</td>
+                  <td className="px-4 py-3 font-semibold text-[#0284c7]">{bus.ai_status}</td>
+                  <td className="px-4 py-3 font-bold text-amber-700">{bus.events_today_count}</td>
                   <td className="px-4 py-3 text-right">
-                    <button className="text-cyan-400 hover:text-cyan-300 font-medium">
+                    <button className="text-[#0284c7] hover:text-[#0369a1] font-semibold">
                       Inspect &rarr;
                     </button>
                   </td>

@@ -1,35 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Play,
-  Pause,
-  Zap,
-  ShieldAlert,
   Bell,
+  Settings,
   Clock,
   ChevronDown,
   UserCheck,
-  Radio
+  Radio,
+  Sun,
+  Moon,
+  LogIn,
+  LogOut,
+  Shield,
+  User
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSimulation } from '../../context/SimulationContext';
-import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../../context/ThemeContext';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 
 export const Header: React.FC = () => {
-  const { user, switchRole } = useAuth();
-  const {
-    isRunning,
-    speed,
-    activeAlertsCount,
-    toggleSimulation,
-    setSimulationSpeed,
-    triggerDefectDemo,
-    triggerIncidentDemo
-  } = useSimulation();
+  const { user, switchRole, logout } = useAuth();
+  const { activeAlertsCount, systemMode, setSystemMode } = useSimulation();
+  const { theme, toggleTheme } = useTheme();
 
   const navigate = useNavigate();
+  const location = useLocation();
   const [timeStr, setTimeStr] = useState('');
   const [showRoleMenu, setShowRoleMenu] = useState(false);
-  const [triggering, setTriggering] = useState(false);
 
   useEffect(() => {
     const updateTime = () => {
@@ -49,114 +46,154 @@ export const Header: React.FC = () => {
     'Analyst'
   ] as const;
 
-  const handleTriggerPothole = async () => {
-    setTriggering(true);
-    await triggerDefectDemo();
-    setTimeout(() => setTriggering(false), 800);
-  };
-
-  const handleTriggerIncident = async () => {
-    setTriggering(true);
-    await triggerIncidentDemo();
-    setTimeout(() => setTriggering(false), 800);
-  };
-
   return (
-    <header className="h-16 bg-slate-900/90 backdrop-blur border-b border-slate-800 px-6 flex items-center justify-between sticky top-0 z-30 ml-64">
-      {/* Left: Demo Mode & System Status */}
+    <header className="h-16 bg-white dark:bg-[#111c2e] border-b border-slate-200 dark:border-slate-800 px-6 flex items-center justify-between sticky top-0 z-30 ml-64 text-slate-800 dark:text-slate-100 shadow-2xs font-sans transition-colors duration-200">
+      {/* Left: Brand Title & Live / Demo Mode Switcher */}
       <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 rounded-full">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 radar-dot"></span>
-          <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">LIVE DEMO MODE</span>
-        </div>
+        <div className="flex items-center gap-3">
+          <span className="font-heading font-extrabold text-[#063269] dark:text-sky-400 text-lg tracking-tight">
+            BusSense AI
+          </span>
 
-        <div className="hidden lg:flex items-center gap-2 text-xs text-slate-400 bg-slate-950/60 px-3 py-1.5 rounded-md border border-slate-800">
-          <Radio className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-          <span>Edge AI Fleet: <strong className="text-slate-200 font-semibold">20 Units Active</strong></span>
-        </div>
-      </div>
+          {/* Interactive LIVE vs DEMO Mode Toggle Pill */}
+          <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-2xs">
+            <button
+              onClick={() => setSystemMode('live')}
+              className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                systemMode === 'live'
+                  ? 'bg-rose-600 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+              title="Live Edge Mode (Hardware not connected - 0 Active Buses)"
+              aria-label="Switch to Live Mode"
+            >
+              <span className={`w-1.5 h-1.5 rounded-full ${systemMode === 'live' ? 'bg-white animate-pulse' : 'bg-slate-400'}`}></span>
+              <span>LIVE</span>
+            </button>
 
-      {/* Right: Simulation Controls, Demo Triggers & Role Switcher */}
-      <div className="flex items-center gap-3">
-        {/* Simulation Controls */}
-        <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg p-1 text-xs">
-          <button
-            onClick={toggleSimulation}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded transition-colors ${
-              isRunning ? 'bg-amber-500/20 text-amber-400 font-medium' : 'bg-emerald-500/20 text-emerald-400 font-medium'
-            }`}
-            title={isRunning ? 'Pause Simulation' : 'Resume Simulation'}
-          >
-            {isRunning ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-            <span>{isRunning ? 'Pause' : 'Play'}</span>
-          </button>
-
-          <div className="h-4 w-px bg-slate-800 mx-1"></div>
-
-          <div className="flex items-center gap-1 px-1">
-            {[1.0, 2.0, 5.0, 10.0].map((s) => (
-              <button
-                key={s}
-                onClick={() => setSimulationSpeed(s)}
-                className={`px-1.5 py-0.5 rounded text-[11px] font-mono transition-colors ${
-                  speed === s ? 'bg-cyan-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                {s}x
-              </button>
-            ))}
+            <button
+              onClick={() => setSystemMode('demo')}
+              className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                systemMode === 'demo'
+                  ? 'bg-[#0284c7] text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+              title="Demo Simulation Mode (Full Active Fleet - 20 Buses)"
+              aria-label="Switch to Demo Mode"
+            >
+              <span className={`w-1.5 h-1.5 rounded-full ${systemMode === 'demo' ? 'bg-emerald-300 animate-pulse' : 'bg-slate-400'}`}></span>
+              <span>DEMO</span>
+            </button>
           </div>
         </div>
 
-        {/* Demo Scenario Triggers */}
+        {/* Dynamic Status Badges depending on Live vs Demo Mode */}
+        {systemMode === 'live' ? (
+          <div className="hidden xl:flex items-center gap-2 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 px-2.5 py-1 rounded-full">
+            <span className="w-2 h-2 rounded-full bg-rose-600 dark:bg-rose-400 animate-ping"></span>
+            <span className="text-[11px] font-bold text-rose-700 dark:text-rose-300 uppercase tracking-wider">
+              Live Standby (Not Connected)
+            </span>
+          </div>
+        ) : (
+          <div className="hidden xl:flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 px-2.5 py-1 rounded-full">
+            <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400 radar-dot"></span>
+            <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider">
+              Demo Simulation Active
+            </span>
+          </div>
+        )}
+
+        <div className="hidden lg:flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/60 px-3 py-1 rounded-md border border-slate-200 dark:border-slate-700">
+          <Radio className={`w-3.5 h-3.5 ${systemMode === 'live' ? 'text-rose-500' : 'text-[#0284c7] dark:text-sky-400'} animate-pulse`} />
+          <span>
+            Survey Fleet:{' '}
+            <strong className={`${systemMode === 'live' ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-white'} font-semibold`}>
+              {systemMode === 'live' ? '0 Units Active (Disconnected)' : '20 Units Active'}
+            </strong>
+          </span>
+        </div>
+      </div>
+
+      {/* Right: Theme Toggle, Notification Bell, System Configuration, Login Option & Role Switcher */}
+      <div className="flex items-center gap-3">
+        {/* Real-time Clock */}
+        <div className="hidden md:flex items-center gap-1.5 text-xs font-mono text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/60 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
+          <Clock className="w-3.5 h-3.5 text-slate-400" />
+          <span>{timeStr}</span>
+        </div>
+
+        {/* Light / Dark Mode Toggle Symbol */}
         <button
-          onClick={handleTriggerPothole}
-          disabled={triggering}
-          className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30 text-xs font-medium transition-all cursor-pointer"
-          title="Emit simulated pothole detection from BUS-024 to demonstrate live multi-bus clustering"
+          onClick={toggleTheme}
+          className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-amber-400 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer shadow-2xs flex items-center justify-center"
+          title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+          aria-label="Toggle Theme"
         >
-          <Zap className="w-3.5 h-3.5 text-amber-400" />
-          <span>+ Trigger Pothole</span>
+          {theme === 'light' ? (
+            <Moon className="w-4 h-4 text-slate-700" />
+          ) : (
+            <Sun className="w-4 h-4 text-amber-400" />
+          )}
         </button>
 
-        <button
-          onClick={handleTriggerIncident}
-          disabled={triggering}
-          className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-xs font-medium transition-all cursor-pointer"
-          title="Emit Hit-and-Run incident with OCR Plate extraction"
-        >
-          <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
-          <span>+ Trigger Incident</span>
-        </button>
-
-        {/* Alerts Bell */}
+        {/* Notification Bell Symbol (Alerts Center) */}
         <button
           onClick={() => navigate('/alerts')}
-          className="relative p-2 rounded-lg bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 transition-colors"
-          title="View Alerts Center"
+          className={`relative p-2 rounded-lg border transition-all cursor-pointer shadow-2xs flex items-center justify-center ${
+            location.pathname === '/alerts'
+              ? 'bg-blue-50 dark:bg-sky-950/80 text-[#0284c7] dark:text-sky-400 border-[#0284c7]/40 dark:border-sky-700 ring-2 ring-[#0284c7]/20'
+              : 'bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700'
+          }`}
+          title="Alerts Center (Notifications)"
+          aria-label="View Alerts Center"
         >
           <Bell className="w-4 h-4" />
           {activeAlertsCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center animate-pulse">
               {activeAlertsCount}
             </span>
           )}
         </button>
 
-        {/* Role Switcher */}
+        {/* System Configuration Symbol (Settings) */}
+        <button
+          onClick={() => navigate('/settings')}
+          className={`p-2 rounded-lg border transition-all cursor-pointer shadow-2xs flex items-center justify-center ${
+            location.pathname === '/settings'
+              ? 'bg-blue-50 dark:bg-sky-950/80 text-[#0284c7] dark:text-sky-400 border-[#0284c7]/40 dark:border-sky-700 ring-2 ring-[#0284c7]/20'
+              : 'bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700'
+          }`}
+          title="System Configuration & Edge Parameters"
+          aria-label="System Configuration"
+        >
+          <Settings className="w-4 h-4" />
+        </button>
+
+        {/* Login Option */}
+        <Link
+          to="/login"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
+          title="Login / Switch Account"
+        >
+          <LogIn className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-400" />
+          <span className="hidden sm:inline">Login</span>
+        </Link>
+
+        {/* Operational Role Switcher */}
         <div className="relative">
           <button
             onClick={() => setShowRoleMenu(!showRoleMenu)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 text-xs text-slate-200 transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 font-medium transition-colors cursor-pointer shadow-2xs"
           >
-            <UserCheck className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="hidden sm:inline font-medium">{user?.role}</span>
+            <UserCheck className="w-3.5 h-3.5 text-[#0284c7] dark:text-sky-400" />
+            <span className="hidden sm:inline font-semibold">{user?.role || 'Administrator'}</span>
             <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
           </button>
 
           {showRoleMenu && (
-            <div className="absolute right-0 mt-2 w-52 bg-slate-900 border border-slate-800 rounded-lg shadow-xl py-1 z-50">
-              <div className="px-3 py-1.5 border-b border-slate-800 text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
+            <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#111c2e] border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl py-1 z-50">
+              <div className="px-3 py-1.5 border-b border-slate-100 dark:border-slate-800 text-[10px] uppercase tracking-wider text-slate-400 font-bold">
                 Switch Operational Role
               </div>
               {roles.map((r) => (
@@ -166,22 +203,26 @@ export const Header: React.FC = () => {
                     switchRole(r);
                     setShowRoleMenu(false);
                   }}
-                  className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between hover:bg-slate-800 transition-colors ${
-                    user?.role === r ? 'text-cyan-400 font-semibold bg-slate-800/50' : 'text-slate-300'
+                  className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer ${
+                    user?.role === r ? 'text-[#0284c7] dark:text-sky-400 font-bold bg-sky-50/70 dark:bg-sky-950/50' : 'text-slate-700 dark:text-slate-300'
                   }`}
                 >
                   <span>{r}</span>
-                  {user?.role === r && <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>}
+                  {user?.role === r && <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">Active</span>}
                 </button>
               ))}
+              <div className="border-t border-slate-100 dark:border-slate-800 mt-1 pt-1">
+                <Link
+                  to="/login"
+                  onClick={() => setShowRoleMenu(false)}
+                  className="w-full text-left px-3 py-1.5 text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800"
+                >
+                  <LogIn className="w-3.5 h-3.5 text-[#0284c7]" />
+                  <span>Go to Login Portal</span>
+                </Link>
+              </div>
             </div>
           )}
-        </div>
-
-        {/* Live Clock */}
-        <div className="hidden xl:flex items-center gap-1.5 text-xs font-mono text-slate-400 bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800">
-          <Clock className="w-3.5 h-3.5 text-slate-400" />
-          <span>{timeStr}</span>
         </div>
       </div>
     </header>

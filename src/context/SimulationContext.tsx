@@ -2,7 +2,11 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { api } from '../services/api';
 import { useWebSocket } from '../hooks/useWebSocket';
 
+export type SystemMode = 'demo' | 'live';
+
 interface SimulationContextType {
+  systemMode: SystemMode;
+  setSystemMode: (mode: SystemMode) => void;
   isRunning: boolean;
   speed: number;
   liveBuses: any[];
@@ -19,17 +23,29 @@ interface SimulationContextType {
 const SimulationContext = createContext<SimulationContextType | undefined>(undefined);
 
 export const SimulationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [systemMode, setSystemModeState] = useState<SystemMode>(() => {
+    return (localStorage.getItem('bussense_system_mode') as SystemMode) || 'demo';
+  });
+
+  const setSystemMode = (mode: SystemMode) => {
+    setSystemModeState(mode);
+    localStorage.setItem('bussense_system_mode', mode);
+  };
+
   const [isRunning, setIsRunning] = useState(true);
   const [speed, setSpeed] = useState(1.0);
-  const [liveBuses, setLiveBuses] = useState<any[]>([]);
+  const [rawBuses, setRawBuses] = useState<any[]>([]);
   const [liveEvents, setLiveEvents] = useState<any[]>([]);
   const [activeAlertsCount, setActiveAlertsCount] = useState(6);
   const [latestAlert, setLatestAlert] = useState<any | null>(null);
 
+  // When in live mode, as physical edge units are not connected, active buses is empty []
+  const liveBuses = systemMode === 'live' ? [] : rawBuses;
+
   // WebSockets message callbacks
   const handleFleetMessage = useCallback((data: any) => {
     if (data.type === 'FLEET_UPDATE' && Array.isArray(data.buses)) {
-      setLiveBuses(data.buses);
+      setRawBuses(data.buses);
     }
   }, []);
 
@@ -56,7 +72,7 @@ export const SimulationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const fetchFleet = () => {
       api.getBuses().then(buses => {
         if (Array.isArray(buses) && buses.length > 0) {
-          setLiveBuses(buses);
+          setRawBuses(buses);
         }
       }).catch(() => {});
     };
@@ -132,6 +148,8 @@ export const SimulationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   return (
     <SimulationContext.Provider
       value={{
+        systemMode,
+        setSystemMode,
         isRunning,
         speed,
         liveBuses,

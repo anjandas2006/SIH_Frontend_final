@@ -1,51 +1,69 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 @import "leaflet/dist/leaflet.css";
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
+  --rm-navy: #063269;
+  --rm-navy-dark: #041c3b;
+  --rm-blue: #0284c7;
+  --rm-blue-accent: #2ea3f2;
+  --rm-level1: #16a34a;
+  --rm-level2: #65a30d;
+  --rm-level3: #d97706;
+  --rm-level4: #ea580c;
+  --rm-level5: #dc2626;
+  --font-heading: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 body {
   margin: 0;
   padding: 0;
-  background-color: #030712;
-  color: #f3f4f6;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-body);
+  background-color: #f8fafc;
+  color: #0f172a;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* Custom Scrollbar for Command Center */
+h1, h2, h3, h4, h5, h6, .font-heading {
+  font-family: var(--font-heading);
+}
+
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0b0f19;
+  background: #f1f5f9;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1f2937;
-  border-radius: 3px;
+  background: #cbd5e1;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #374151;
+  background: #94a3b8;
 }
 
-/* Pulse animation for live markers */
+/* Radar pulse for live indicators */
 @keyframes radar-pulse {
   0% {
     transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.6);
   }
   70% {
     transform: scale(1.15);
-    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+    box-shadow: 0 0 0 8px rgba(2, 132, 199, 0);
   }
   100% {
     transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    box-shadow: 0 0 0 0 rgba(2, 132, 199, 0);
   }
 }
 
@@ -53,22 +71,187 @@ body {
   animation: radar-pulse 2s infinite;
 }
 
-/* Leaflet dark theme map tiles styling */
+/* Leaflet GIS Clean Light & Dark Styling */
 .leaflet-container {
-  background-color: #0b0f19 !important;
+  background-color: #f1f5f9 !important;
   width: 100%;
   height: 100%;
   z-index: 10;
+  font-family: var(--font-body);
 }
 
 .leaflet-popup-content-wrapper {
-  background-color: #0f172a !important;
-  color: #f1f5f9 !important;
-  border: 1px solid #334155;
-  border-radius: 8px !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.7) !important;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.15), 0 4px 6px -2px rgba(15, 23, 42, 0.05) !important;
 }
 
 .leaflet-popup-tip {
-  background-color: #0f172a !important;
+  background-color: #ffffff !important;
+}
+
+/* 5-Level Badges - Light Mode */
+.badge-rm-level-1 {
+  background-color: #ecfdf5;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.badge-rm-level-2 {
+  background-color: #f7fee7;
+  color: #3f6212;
+  border: 1px solid #d9f99d;
+}
+
+.badge-rm-level-3 {
+  background-color: #fffbeb;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.badge-rm-level-4 {
+  background-color: #fff7ed;
+  color: #9a3412;
+  border: 1px solid #fed7aa;
+}
+
+.badge-rm-level-5 {
+  background-color: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+/* ========================================================================= */
+/* UNIVERSAL DARK MODE RULES (APPLIES ACROSS ALL PAGES AND COMPONENTS)       */
+/* ========================================================================= */
+.dark {
+  color-scheme: dark;
+}
+
+.dark body {
+  background-color: #0b1329 !important;
+  color: #f1f5f9 !important;
+}
+
+.dark main {
+  background-color: #0b1329 !important;
+}
+
+.dark aside {
+  background-color: #0e1832 !important;
+  border-color: #1c2b48 !important;
+  color: #e2e8f0 !important;
+}
+
+.dark header {
+  background-color: #0e1832 !important;
+  border-color: #1c2b48 !important;
+  color: #f1f5f9 !important;
+}
+
+.dark .bg-white {
+  background-color: #111e38 !important;
+}
+
+.dark .bg-slate-50 {
+  background-color: #0d172e !important;
+}
+
+.dark .bg-slate-100 {
+  background-color: #152442 !important;
+}
+
+.dark .border-slate-100,
+.dark .border-slate-200 {
+  border-color: #1e3052 !important;
+}
+
+.dark .border-slate-300 {
+  border-color: #273e66 !important;
+}
+
+.dark .text-slate-900 {
+  color: #f8fafc !important;
+}
+
+.dark .text-slate-800 {
+  color: #e2e8f0 !important;
+}
+
+.dark .text-slate-700 {
+  color: #cbd5e1 !important;
+}
+
+.dark .text-slate-600 {
+  color: #94a3b8 !important;
+}
+
+.dark .text-slate-500 {
+  color: #64748b !important;
+}
+
+.dark [class*="063269"],
+.dark h1,
+.dark h2,
+.dark h3 {
+  color: #f8fafc !important;
+}
+
+/* Form controls in Dark Mode */
+.dark input,
+.dark select,
+.dark textarea {
+  background-color: #0e1832 !important;
+  border-color: #243a60 !important;
+  color: #f8fafc !important;
+}
+
+.dark input::placeholder {
+  color: #64748b !important;
+}
+
+/* Tables in Dark Mode */
+.dark table thead {
+  background-color: #0a1326 !important;
+  color: #94a3b8 !important;
+  border-color: #1e3052 !important;
+}
+
+.dark table tbody tr:hover {
+  background-color: #162444 !important;
+}
+
+.dark table td {
+  border-color: #1e3052 !important;
+  color: #e2e8f0 !important;
+}
+
+/* Leaflet in Dark Mode */
+.dark .leaflet-container {
+  background-color: #0a1224 !important;
+}
+
+.dark .leaflet-popup-content-wrapper {
+  background-color: #111e38 !important;
+  color: #f8fafc !important;
+  border: 1px solid #273e66 !important;
+}
+
+.dark .leaflet-popup-tip {
+  background-color: #111e38 !important;
+}
+
+/* Scrollbars in Dark Mode */
+.dark ::-webkit-scrollbar-track {
+  background: #0b1329;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #273e66;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #38bdf8;
 }

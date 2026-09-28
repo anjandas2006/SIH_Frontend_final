@@ -1,19 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-  Cpu,
-  UploadCloud,
-  Play,
-  Pause,
-  RotateCcw,
-  CheckCircle2,
-  AlertTriangle,
-  TrafficCone,
-  ShieldAlert,
-  Send,
-  Sliders,
-  ChevronRight,
-  Eye,
-  FileVideo
+  Cpu as CpuIcon,
+  Play as PlayIcon,
+  Pause as PauseIcon,
+  RotateCcw as RotateCcwIcon,
+  CheckCircle2 as CheckCircle2Icon,
+  AlertTriangle as AlertTriangleIcon,
+  Send as SendIcon,
+  Eye as EyeIcon
 } from 'lucide-react';
 import { api } from '../services/api';
 import { useSimulation } from '../context/SimulationContext';
@@ -88,11 +82,11 @@ export const VideoAnalysis: React.FC = () => {
     const height = canvas.height;
 
     // Background road environment
-    ctx.fillStyle = '#1e242d';
+    ctx.fillStyle = '#1e293b';
     ctx.fillRect(0, 0, width, height);
 
     // Perspective road
-    ctx.fillStyle = '#2d333f';
+    ctx.fillStyle = '#334155';
     ctx.beginPath();
     ctx.moveTo(width * 0.35, height * 0.35);
     ctx.lineTo(width * 0.65, height * 0.35);
@@ -101,29 +95,29 @@ export const VideoAnalysis: React.FC = () => {
     ctx.closePath();
     ctx.fill();
 
-    // Road lane markings
-    ctx.strokeStyle = '#cbd5e1';
+    // Road dashed center line
+    ctx.strokeStyle = '#f8fafc';
+    ctx.setLineDash([16, 12]);
     ctx.lineWidth = 3;
-    ctx.setLineDash([20, 20]);
     ctx.beginPath();
     ctx.moveTo(width * 0.5, height * 0.35);
     ctx.lineTo(width * 0.5, height);
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Draw detected bounding boxes
+    // Draw detections
     frame.detections.forEach((det: any) => {
-      const [bx, by, bw, bh] = det.bbox;
-      const x = bx * width;
-      const y = by * height;
-      const w = bw * width;
-      const h = bh * height;
+      const x = det.bbox[0] * width;
+      const y = det.bbox[1] * height;
+      const w = det.bbox[2] * width;
+      const h = det.bbox[3] * height;
 
-      let strokeColor = '#10b981'; // Green for normal vehicles
-      if (det.class_name === 'pothole') strokeColor = '#ef4444';
-      if (det.class_name === 'pedestrian') strokeColor = '#f59e0b';
-      if (det.plate_text) strokeColor = '#eab308';
+      let strokeColor = '#0284c7';
+      if (det.class_name.includes('pothole') || det.class_name.includes('defect')) strokeColor = '#ea580c';
+      if (det.class_name.includes('accident') || det.class_name.includes('incident')) strokeColor = '#dc2626';
+      if (det.class_name.includes('pedestrian')) strokeColor = '#a855f7';
 
+      // Bounding box
       ctx.strokeStyle = strokeColor;
       ctx.lineWidth = 2.5;
       ctx.strokeRect(x, y, w, h);
@@ -136,22 +130,22 @@ export const VideoAnalysis: React.FC = () => {
       ctx.fillRect(x, y - 20, textWidth + 10, 20);
 
       // Label text
-      ctx.fillStyle = strokeColor === '#ef4444' ? '#fff' : '#000';
+      ctx.fillStyle = '#ffffff';
       ctx.fillText(label, x + 5, y - 6);
 
       // If plate text
       if (det.plate_text) {
-        ctx.fillStyle = '#eab308';
+        ctx.fillStyle = '#f59e0b';
         ctx.fillRect(x, y + h + 2, 120, 18);
-        ctx.fillStyle = '#000';
+        ctx.fillStyle = '#0f172a';
         ctx.fillText(`PLATE: ${det.plate_text}`, x + 4, y + h + 15);
       }
     });
 
     // Top HUD Telemetry
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
     ctx.fillRect(0, 0, width, 32);
-    ctx.fillStyle = '#06b6d4';
+    ctx.fillStyle = '#38bdf8';
     ctx.font = 'bold 11px monospace';
     ctx.fillText(
       `FRAME: ${frame.frame_number}/15 | TIME: ${frame.timestamp_sec}s | DENSITY: ${frame.density_percent}% | BUS: BUS-024 [FRONT-CAM]`,
@@ -160,9 +154,9 @@ export const VideoAnalysis: React.FC = () => {
     );
 
     // Bottom Watermark
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
     ctx.fillRect(0, height - 24, width, 24);
-    ctx.fillStyle = '#10b981';
+    ctx.fillStyle = '#34d399';
     ctx.font = '10px monospace';
     ctx.fillText(`YOLOv8-URBAN + BYTETRACK OBJECT INFERENCE | 0.024s / FRAME`, 14, height - 8);
   }, [currentFrameIndex, analysisResult]);
@@ -175,29 +169,29 @@ export const VideoAnalysis: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-slate-800 font-sans">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200">
         <div>
-          <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2.5">
-            <Cpu className="w-5 h-5 text-cyan-400" />
+          <h1 className="text-2xl font-heading font-extrabold text-[#063269] tracking-tight flex items-center gap-2.5">
+            <CpuIcon className="w-6 h-6 text-[#0284c7]" />
             <span>Edge AI Video Analysis & Computer Vision Studio</span>
           </h1>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-slate-600 mt-1">
             Simulate onboard bus camera processing: Frame extraction &rarr; Object detection &rarr; Tracking &rarr; Geotagged event creation
           </p>
         </div>
 
         {/* Demo Video Selector */}
-        <div className="flex items-center gap-2">
-          <label className="text-xs text-slate-400 font-semibold">Demo Scenario:</label>
+        <div className="flex items-center gap-2.5">
+          <label className="text-xs text-slate-600 font-semibold">Demo Scenario:</label>
           <select
             value={selectedScenarioId}
             onChange={(e) => {
               setSelectedScenarioId(e.target.value);
               runAnalysis(e.target.value);
             }}
-            className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-white focus:outline-none focus:border-cyan-500"
+            className="px-3.5 py-1.5 rounded-lg bg-white border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-[#0284c7] shadow-2xs font-medium"
           >
             {scenarios.map((s) => (
               <option key={s.id} value={s.id}>
@@ -211,8 +205,8 @@ export const VideoAnalysis: React.FC = () => {
       {/* Main Studio Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left: Video Player & Controls */}
-        <div className="lg:col-span-8 bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col shadow-xl">
-          <div className="relative rounded-lg overflow-hidden border border-slate-800 bg-black aspect-video flex items-center justify-center">
+        <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-5 flex flex-col shadow-sm">
+          <div className="relative rounded-xl overflow-hidden border border-slate-200 bg-slate-900 aspect-video flex items-center justify-center shadow-inner">
             <canvas
               ref={canvasRef}
               width={800}
@@ -220,9 +214,9 @@ export const VideoAnalysis: React.FC = () => {
               className="w-full h-full object-contain"
             />
             {isProcessing && (
-              <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center text-white gap-2">
-                <div className="w-8 h-8 border-3 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-xs font-mono text-cyan-400">Running Edge AI Object Detection...</p>
+              <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-xs flex flex-col items-center justify-center text-white gap-2">
+                <div className="w-8 h-8 border-3 border-[#0284c7] border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-xs font-mono text-[#38bdf8]">Running Edge AI Object Detection...</p>
               </div>
             )}
           </div>
@@ -232,18 +226,19 @@ export const VideoAnalysis: React.FC = () => {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsPlaying(!isPlaying)}
-                className="p-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold transition-colors cursor-pointer"
+                className="p-2.5 rounded-lg bg-[#0284c7] hover:bg-[#0369a1] text-white font-bold transition-colors cursor-pointer shadow-2xs"
+                title={isPlaying ? 'Pause' : 'Play'}
               >
-                {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                {isPlaying ? <PauseIcon className="w-4 h-4" /> : <PlayIcon className="w-4 h-4" />}
               </button>
               <button
                 onClick={() => setCurrentFrameIndex(0)}
-                className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+                className="p-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-colors shadow-2xs cursor-pointer"
                 title="Rewind"
               >
-                <RotateCcw className="w-4 h-4" />
+                <RotateCcwIcon className="w-4 h-4" />
               </button>
-              <span className="text-xs font-mono text-slate-400 ml-2">
+              <span className="text-xs font-mono text-slate-600 ml-2 font-medium">
                 Frame {currentFrameIndex + 1} / 15 ({currentFrameData?.timestamp_sec || 0}s)
               </span>
             </div>
@@ -259,54 +254,54 @@ export const VideoAnalysis: React.FC = () => {
                   setCurrentFrameIndex(Number(e.target.value));
                   setIsPlaying(false);
                 }}
-                className="w-full accent-cyan-500 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
+                className="w-full accent-[#0284c7] h-1.5 bg-slate-200 rounded-lg cursor-pointer"
               />
             </div>
 
             <div className="flex items-center gap-2 text-xs">
-              <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">
+              <span className="px-2.5 py-1 rounded bg-emerald-50 text-emerald-700 font-bold border border-emerald-200">
                 1080p @ 30 FPS
               </span>
             </div>
           </div>
 
           {/* Real-time Vehicle Counting Breakdown */}
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mt-4 pt-4 border-t border-slate-800 text-center text-xs">
-            <div className="p-2 rounded bg-slate-950 border border-slate-800">
-              <p className="text-[10px] text-slate-400 uppercase font-semibold">Cars</p>
-              <p className="text-base font-bold text-cyan-400 mt-0.5">{currentFrameData?.vehicle_counts.car || 2}</p>
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-2.5 mt-4 pt-4 border-t border-slate-200 text-center text-xs">
+            <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 shadow-2xs">
+              <p className="text-[10px] text-slate-500 uppercase font-semibold">Cars</p>
+              <p className="text-lg font-bold text-[#0284c7] mt-0.5">{currentFrameData?.vehicle_counts.car || 2}</p>
             </div>
-            <div className="p-2 rounded bg-slate-950 border border-slate-800">
-              <p className="text-[10px] text-slate-400 uppercase font-semibold">Bikes</p>
-              <p className="text-base font-bold text-emerald-400 mt-0.5">{currentFrameData?.vehicle_counts.motorcycle || 1}</p>
+            <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 shadow-2xs">
+              <p className="text-[10px] text-slate-500 uppercase font-semibold">Bikes</p>
+              <p className="text-lg font-bold text-emerald-700 mt-0.5">{currentFrameData?.vehicle_counts.motorcycle || 1}</p>
             </div>
-            <div className="p-2 rounded bg-slate-950 border border-slate-800">
-              <p className="text-[10px] text-slate-400 uppercase font-semibold">Buses</p>
-              <p className="text-base font-bold text-indigo-400 mt-0.5">{currentFrameData?.vehicle_counts.bus || 1}</p>
+            <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 shadow-2xs">
+              <p className="text-[10px] text-slate-500 uppercase font-semibold">Buses</p>
+              <p className="text-lg font-bold text-indigo-700 mt-0.5">{currentFrameData?.vehicle_counts.bus || 1}</p>
             </div>
-            <div className="p-2 rounded bg-slate-950 border border-slate-800">
-              <p className="text-[10px] text-slate-400 uppercase font-semibold">Autos</p>
-              <p className="text-base font-bold text-amber-400 mt-0.5">{currentFrameData?.vehicle_counts.auto_rickshaw || 1}</p>
+            <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 shadow-2xs">
+              <p className="text-[10px] text-slate-500 uppercase font-semibold">Autos</p>
+              <p className="text-lg font-bold text-amber-700 mt-0.5">{currentFrameData?.vehicle_counts.auto_rickshaw || 1}</p>
             </div>
-            <div className="p-2 rounded bg-slate-950 border border-slate-800">
-              <p className="text-[10px] text-slate-400 uppercase font-semibold">Pedestrians</p>
-              <p className="text-base font-bold text-purple-400 mt-0.5">{currentFrameData?.vehicle_counts.pedestrian || 0}</p>
+            <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 shadow-2xs">
+              <p className="text-[10px] text-slate-500 uppercase font-semibold">Pedestrians</p>
+              <p className="text-lg font-bold text-purple-700 mt-0.5">{currentFrameData?.vehicle_counts.pedestrian || 0}</p>
             </div>
-            <div className="p-2 rounded bg-slate-950 border border-slate-800">
-              <p className="text-[10px] text-slate-400 uppercase font-semibold">Density</p>
-              <p className="text-base font-bold text-rose-400 mt-0.5">{currentFrameData?.density_percent || 65}%</p>
+            <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 shadow-2xs">
+              <p className="text-[10px] text-slate-500 uppercase font-semibold">Density</p>
+              <p className="text-lg font-bold text-rose-700 mt-0.5">{currentFrameData?.density_percent || 65}%</p>
             </div>
           </div>
         </div>
 
         {/* Right: Extracted Events & Edge Action Feed */}
-        <div className="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col shadow-xl">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
+        <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-5 flex flex-col shadow-sm">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-200 mb-3">
             <div>
-              <h2 className="text-sm font-semibold text-white">Extracted High-Value Events</h2>
-              <p className="text-[10px] text-slate-400">Events prioritized for central server upload</p>
+              <h2 className="text-sm font-bold text-slate-900">Extracted High-Value Events</h2>
+              <p className="text-[10px] text-slate-500">Events prioritized for central server upload</p>
             </div>
-            <span className="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-400 text-xs font-bold">
+            <span className="px-2 py-0.5 rounded bg-sky-50 text-[#0284c7] text-xs font-bold border border-sky-200">
               {analysisResult?.summary_events.length || 0} Flagged
             </span>
           </div>
@@ -315,23 +310,23 @@ export const VideoAnalysis: React.FC = () => {
             {analysisResult?.summary_events.map((ev: any, idx: number) => (
               <div
                 key={idx}
-                className="p-3 rounded-lg bg-slate-950 border border-slate-800 space-y-2"
+                className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5 shadow-2xs"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                    <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                    <AlertTriangleIcon className="w-3.5 h-3.5 text-amber-600" />
                     {ev.type.replace('_', ' ')}
                   </span>
-                  <span className="text-[10px] font-mono text-cyan-400 font-bold">
+                  <span className="text-[10px] font-mono text-[#0284c7] font-bold bg-sky-50 px-1.5 py-0.5 rounded border border-sky-200">
                     Frame {ev.frame}
                   </span>
                 </div>
 
-                <div className="text-[11px] text-slate-300 space-y-1">
-                  <p>Confidence: <strong className="text-emerald-400">{ev.confidence}</strong></p>
-                  <p>Severity: <strong className="text-rose-400">{ev.severity}</strong></p>
-                  {ev.plate && <p>Plate: <strong className="text-amber-400 font-mono">{ev.plate}</strong></p>}
-                  <p className="text-[10px] text-slate-400 font-mono">Geotag: {ev.gps[0]}, {ev.gps[1]}</p>
+                <div className="text-[11px] text-slate-600 space-y-1">
+                  <p>Confidence: <strong className="text-emerald-700">{ev.confidence}</strong></p>
+                  <p>Severity: <strong className="text-rose-700">{ev.severity}</strong></p>
+                  {ev.plate && <p>Plate: <strong className="text-amber-700 font-mono">{ev.plate}</strong></p>}
+                  <p className="text-[10px] text-slate-500 font-mono">Geotag: {ev.gps[0]}, {ev.gps[1]}</p>
                 </div>
 
                 {/* Evidence Thumbnail */}
@@ -348,29 +343,29 @@ export const VideoAnalysis: React.FC = () => {
                         severity: ev.severity
                       }
                     })}
-                    className="flex-1 py-1 px-2 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-[10px] text-slate-300 flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                    className="flex-1 py-1.5 px-2 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 text-[11px] font-semibold text-slate-700 flex items-center justify-center gap-1 transition-colors cursor-pointer shadow-2xs"
                   >
-                    <Eye className="w-3 h-3" />
+                    <EyeIcon className="w-3.5 h-3.5" />
                     <span>View Evidence</span>
                   </button>
 
                   <button
                     onClick={() => handleCommitEvent(idx)}
                     disabled={committedEvents[idx]}
-                    className={`flex-1 py-1 px-2 rounded text-[10px] font-bold flex items-center justify-center gap-1 transition-all ${
+                    className={`flex-1 py-1.5 px-2 rounded-lg text-[11px] font-semibold flex items-center justify-center gap-1 transition-all shadow-2xs ${
                       committedEvents[idx]
-                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 cursor-default'
-                        : 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 cursor-pointer'
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-300 cursor-default'
+                        : 'bg-[#0284c7] hover:bg-[#0369a1] text-white cursor-pointer'
                     }`}
                   >
                     {committedEvents[idx] ? (
                       <>
-                        <CheckCircle2 className="w-3 h-3" />
+                        <CheckCircle2Icon className="w-3.5 h-3.5 text-emerald-600" />
                         <span>Committed to City DB</span>
                       </>
                     ) : (
                       <>
-                        <Send className="w-3 h-3" />
+                        <SendIcon className="w-3.5 h-3.5" />
                         <span>Commit to DB</span>
                       </>
                     )}

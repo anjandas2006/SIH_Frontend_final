@@ -147,6 +147,14 @@ export interface DashboardSummary {
     under_review: number;
     work_order_issued: number;
     repaired: number;
+    rm_pci_index?: number;
+    pci_rating_label?: string;
+    surveyed_network_km?: number;
+    level_1_excellent_pct?: number;
+    level_2_good_pct?: number;
+    level_3_fair_pct?: number;
+    level_4_poor_pct?: number;
+    level_5_critical_pct?: number;
   };
   incident_summary: Record<string, number>;
   fleet_status: Record<string, number>;
