@@ -1,4 +1,10 @@
-const BACKEND_BASE = (import.meta.env.VITE_BACKEND_URL || 'https://sih-backend-delta.vercel.app').replace(/\/$/, '');
+const BACKEND_BASE = (
+  import.meta.env.DEV
+    ? (import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000')
+    : (import.meta.env.VITE_BACKEND_URL && !import.meta.env.VITE_BACKEND_URL.includes('127.0.0.1') && !import.meta.env.VITE_BACKEND_URL.includes('localhost')
+        ? import.meta.env.VITE_BACKEND_URL
+        : 'https://sih-backend-delta.vercel.app')
+).replace(/\/$/, '');
 const API_BASE = import.meta.env.DEV ? '/api' : `${BACKEND_BASE}/api`;
 
 export function getEvidenceUrl(path?: string | null): string {
