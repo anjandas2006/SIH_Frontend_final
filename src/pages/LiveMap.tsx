@@ -95,15 +95,8 @@ export const LiveMap: React.FC = () => {
     setLayers((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const fallbackBuses = [
-    { id: '1', bus_number: 'BUS-024', lat: 22.5726, lng: 88.3639, speed: 32, route_name: 'Howrah ⇄ Esplanade' },
-    { id: '2', bus_number: 'BUS-017', lat: 22.5510, lng: 88.3520, speed: 28, route_name: 'Salt Lake ⇄ Park Street' },
-    { id: '3', bus_number: 'BUS-011', lat: 22.5850, lng: 88.4100, speed: 24, route_name: 'Garia ⇄ Esplanade' },
-    { id: '4', bus_number: 'BUS-003', lat: 22.5640, lng: 88.3515, speed: 35, route_name: 'Dum Dum ⇄ Howrah' }
-  ];
-
-  // In live mode, 0 active buses; in demo mode, show live simulation
-  const displayBuses = systemMode === 'live' ? [] : (liveBuses.length > 0 ? liveBuses : fallbackBuses);
+  // In live mode, 0 active buses; in demo mode, show active moving fleet from simulation
+  const displayBuses = systemMode === 'live' ? [] : liveBuses;
 
   return (
     <div className="space-y-4 h-[calc(100vh-6.5rem)] flex flex-col font-sans text-slate-800 dark:text-slate-100">

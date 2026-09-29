@@ -44,7 +44,7 @@ const busIcon = L.divIcon({
 
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { liveBuses, liveEvents, systemMode } = useSimulation();
+  const { liveBuses, liveEvents, systemMode, triggerDefectDemo, triggerIncidentDemo } = useSimulation();
   const { theme } = useTheme();
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
@@ -67,66 +67,65 @@ export const Dashboard: React.FC = () => {
       });
   }, []);
 
+  // Compute live event counts in real-time
+  const liveFrameCount = liveEvents.length > 0 ? liveEvents.length * 10 : 0;
+  const livePotholesCount = liveEvents.filter(e => e.category === 'POTHOLE' || e.type === 'DEFECT' || (e.title && e.title.toLowerCase().includes('pothole'))).length;
+  const liveTrafficCount = liveEvents.filter(e => e.type === 'TRAFFIC' || e.type === 'TRAFFIC_UPDATE' || (e.title && e.title.toLowerCase().includes('traffic'))).length;
+  const liveIncidentsCount = liveEvents.filter(e => e.category === 'INCIDENT' || e.type === 'INCIDENT' || (e.title && e.title.toLowerCase().includes('incident')) || (e.title && e.title.toLowerCase().includes('hit-and-run'))).length;
+  const liveWaterloggingCount = liveEvents.filter(e => e.category === 'WATERLOGGING' || (e.title && e.title.toLowerCase().includes('waterlogging'))).length;
+
   const kpis = [
     {
       title: 'Survey Fleet Units',
-      value: systemMode === 'live' ? 0 : (summary?.active_buses || 20),
-      subtext: systemMode === 'live' ? '0 Units Connected (Standby for Edge Uplink)' : '20 Total Dashcam Units',
+      value: systemMode === 'live' ? liveBuses.length : (summary?.active_buses || 20),
+      subtext: systemMode === 'live' ? `${liveBuses.length} Units Active (Standby for Edge Uplink)` : '20 Total Dashcam Units',
       icon: Bus,
-      color: systemMode === 'live' ? 'text-slate-400' : 'text-[#0284c7]',
-      bgIcon: systemMode === 'live' ? 'bg-slate-100 dark:bg-slate-800' : 'bg-sky-50 dark:bg-sky-950/60'
+      color: systemMode === 'live' && liveBuses.length === 0 ? 'text-slate-400' : 'text-[#0284c7]',
+      bgIcon: systemMode === 'live' && liveBuses.length === 0 ? 'bg-slate-100 dark:bg-slate-800' : 'bg-sky-50 dark:bg-sky-950/60'
     },
     {
       title: '10-ft Frame Detections',
-      value: (summary?.ai_events_today || 1284).toLocaleString(),
-      subtext: '+18% vs weekly avg',
+      value: systemMode === 'live' ? liveFrameCount.toLocaleString() : (summary?.ai_events_today || 1284).toLocaleString(),
+      subtext: systemMode === 'live' ? (liveFrameCount > 0 ? `${liveFrameCount} live edge packets ingested` : '0 real-time detections') : '+18% vs weekly avg',
       icon: Cpu,
-      color: 'text-emerald-600 dark:text-emerald-400',
-      bgIcon: 'bg-emerald-50 dark:bg-emerald-950/60'
+      color: systemMode === 'live' && liveFrameCount === 0 ? 'text-slate-400' : 'text-emerald-600 dark:text-emerald-400',
+      bgIcon: systemMode === 'live' && liveFrameCount === 0 ? 'bg-slate-100 dark:bg-slate-800' : 'bg-emerald-50 dark:bg-emerald-950/60'
     },
     {
       title: 'Pothole Clusters',
-      value: summary?.potholes_detected || 42,
-      subtext: `${summary?.road_health_metrics?.unresolved || 18} Unresolved (Immediate)`,
+      value: systemMode === 'live' ? livePotholesCount : (summary?.potholes_detected || 42),
+      subtext: systemMode === 'live' ? `${livePotholesCount} Live Detected` : `${summary?.road_health_metrics?.unresolved || 18} Unresolved (Immediate)`,
       icon: AlertTriangle,
-      color: 'text-amber-600 dark:text-amber-400',
-      bgIcon: 'bg-amber-50 dark:bg-amber-950/60'
+      color: systemMode === 'live' && livePotholesCount === 0 ? 'text-slate-400' : 'text-amber-600 dark:text-amber-400',
+      bgIcon: systemMode === 'live' && livePotholesCount === 0 ? 'bg-slate-100 dark:bg-slate-800' : 'bg-amber-50 dark:bg-amber-950/60'
     },
     {
       title: 'Traffic Bottlenecks',
-      value: summary?.traffic_hotspots || 16,
-      subtext: 'Avg Speed: 22.4 km/h',
+      value: systemMode === 'live' ? liveTrafficCount : (summary?.traffic_hotspots || 16),
+      subtext: systemMode === 'live' ? `${liveTrafficCount} Congestion Zones` : 'Avg Speed: 22.4 km/h',
       icon: TrafficCone,
-      color: 'text-orange-600 dark:text-orange-400',
-      bgIcon: 'bg-orange-50 dark:bg-orange-950/60'
+      color: systemMode === 'live' && liveTrafficCount === 0 ? 'text-slate-400' : 'text-orange-600 dark:text-orange-400',
+      bgIcon: systemMode === 'live' && liveTrafficCount === 0 ? 'bg-slate-100 dark:bg-slate-800' : 'bg-orange-50 dark:bg-orange-950/60'
     },
     {
       title: 'Active Safety Incidents',
-      value: summary?.active_incidents || 8,
-      subtext: 'Hit-and-Run & Hazards',
+      value: systemMode === 'live' ? liveIncidentsCount : (summary?.active_incidents || 8),
+      subtext: systemMode === 'live' ? `${liveIncidentsCount} Live Alerts` : 'Hit-and-Run & Hazards',
       icon: ShieldAlert,
-      color: 'text-rose-600 dark:text-rose-400',
-      bgIcon: 'bg-rose-50 dark:bg-rose-950/60'
+      color: systemMode === 'live' && liveIncidentsCount === 0 ? 'text-slate-400' : 'text-rose-600 dark:text-rose-400',
+      bgIcon: systemMode === 'live' && liveIncidentsCount === 0 ? 'bg-slate-100 dark:bg-slate-800' : 'bg-rose-50 dark:bg-rose-950/60'
     },
     {
       title: 'Drainage Waterlogging',
-      value: summary?.waterlogging_points || 12,
-      subtext: 'Monsoon Hazard Points',
+      value: systemMode === 'live' ? liveWaterloggingCount : (summary?.waterlogging_points || 12),
+      subtext: systemMode === 'live' ? `${liveWaterloggingCount} Hazard Points` : 'Monsoon Hazard Points',
       icon: Droplets,
-      color: 'text-blue-600 dark:text-blue-400',
-      bgIcon: 'bg-blue-50 dark:bg-blue-950/60'
+      color: systemMode === 'live' && liveWaterloggingCount === 0 ? 'text-slate-400' : 'text-blue-600 dark:text-blue-400',
+      bgIcon: systemMode === 'live' && liveWaterloggingCount === 0 ? 'bg-slate-100 dark:bg-slate-800' : 'bg-blue-50 dark:bg-blue-950/60'
     }
   ];
 
-  const fallbackBuses = [
-    { id: '1', bus_number: 'BUS-024', lat: 22.5726, lng: 88.3639, speed: 32, route_name: 'Howrah ⇄ Esplanade' },
-    { id: '2', bus_number: 'BUS-017', lat: 22.5510, lng: 88.3520, speed: 28, route_name: 'Salt Lake ⇄ Park Street' },
-    { id: '3', bus_number: 'BUS-011', lat: 22.5850, lng: 88.4100, speed: 24, route_name: 'Garia ⇄ Esplanade' },
-    { id: '4', bus_number: 'BUS-003', lat: 22.5640, lng: 88.3515, speed: 35, route_name: 'Dum Dum ⇄ Howrah' }
-  ];
-
-  // In live mode (hardware disconnected), 0 buses are active; In demo mode, live simulation is active
-  const mapBuses = systemMode === 'live' ? [] : (liveBuses.length > 0 ? liveBuses : fallbackBuses);
+  const mapBuses = systemMode === 'live' ? [] : liveBuses;
 
   // High-visibility map tiles: OpenStreetMap used in both bright and dark modes as requested
   const mapTileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -268,57 +267,85 @@ export const Dashboard: React.FC = () => {
               <h2 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">10-ft Defect Inspection Queue</h2>
             </div>
             <span className="text-[11px] font-mono text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 font-semibold">
-              Live Edge Detections
+              {systemMode === 'live' ? 'Live Edge Ingestion' : 'Demo Stream Detections'}
             </span>
           </div>
 
-          <div className="flex-1 overflow-y-auto space-y-2.5 max-h-[360px] pr-1">
-            {summary?.recent_events.map((event, idx) => (
-              <div
-                key={event.id || idx}
-                onClick={() => setSelectedEvidence({
-                  isOpen: true,
-                  title: event.title,
-                  image: event.evidence || '/evidence/sample_pothole.jpg',
-                  metadata: {
-                    busNumber: event.bus,
-                    location: event.location,
-                    timestamp: event.time,
-                    confidence: event.confidence,
-                    severity: event.severity,
-                    interval: 'Captured every 10 ft'
-                  }
-                })}
-                className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-sky-50/50 dark:hover:bg-slate-700/50 border border-slate-200 dark:border-slate-700 transition-all cursor-pointer flex items-center justify-between group"
-              >
-                <div className="flex items-start gap-3 min-w-0">
-                  <div className={`mt-0.5 p-2 rounded-lg ${
-                    event.severity === 'CRITICAL' ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-400' :
-                    event.severity === 'HIGH' ? 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400' : 'bg-sky-100 dark:bg-sky-950 text-[#0284c7] dark:text-sky-400'
-                  }`}>
-                    {event.type === 'DEFECT' ? <AlertTriangle className="w-4 h-4" /> :
-                     event.type === 'TRAFFIC' ? <TrafficCone className="w-4 h-4" /> : <ShieldAlert className="w-4 h-4" />}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-[#0284c7] dark:group-hover:text-sky-400 transition-colors truncate">
-                      {event.title}
-                    </p>
-                    <p className="text-[11px] text-slate-600 dark:text-slate-300 truncate">{event.location}</p>
-                    <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">{event.bus} • Conf: {event.confidence}</p>
-                  </div>
+          <div className="flex-1 overflow-y-auto space-y-2.5 max-h-[360px] pr-1 flex flex-col">
+            {systemMode === 'live' && liveEvents.length === 0 ? (
+              <div className="flex-1 flex flex-col items-center justify-center text-center p-6 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-900/30 my-auto">
+                <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-2.5 shadow-xs">
+                  <CheckCircle2 className="w-5 h-5" />
                 </div>
-
-                <div className="text-right flex flex-col items-end shrink-0">
-                  <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400">{event.time}</span>
-                  <span className={`mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold ${
-                    event.severity === 'CRITICAL' ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800' :
-                    event.severity === 'HIGH' ? 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
-                  }`}>
-                    {event.severity}
-                  </span>
+                <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                  Queue Blank • 0 Incidents Active
+                </h3>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 max-w-[260px] leading-relaxed">
+                  Real-time edge ingestion active. No defects or hazards recorded on live stream. Standby for dashcam telemetry.
+                </p>
+                <div className="mt-3.5 flex flex-wrap gap-2 justify-center">
+                  <button
+                    onClick={() => triggerDefectDemo()}
+                    className="px-2.5 py-1.5 rounded-lg bg-[#0284c7] hover:bg-[#0369a1] text-white text-[10px] font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1"
+                  >
+                    <span>⚡ Send Live Defect</span>
+                  </button>
+                  <button
+                    onClick={() => triggerIncidentDemo()}
+                    className="px-2.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1"
+                  >
+                    <span>🚨 Send Live Incident</span>
+                  </button>
                 </div>
               </div>
-            ))}
+            ) : (
+              (systemMode === 'live' ? liveEvents : (summary?.recent_events || [])).map((event: any, idx: number) => (
+                <div
+                  key={event.id || idx}
+                  onClick={() => setSelectedEvidence({
+                    isOpen: true,
+                    title: event.title,
+                    image: event.evidence || '/evidence/sample_pothole.jpg',
+                    metadata: {
+                      busNumber: event.bus,
+                      location: event.location,
+                      timestamp: event.time,
+                      confidence: event.confidence,
+                      severity: event.severity,
+                      interval: 'Captured every 10 ft'
+                    }
+                  })}
+                  className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-sky-50/50 dark:hover:bg-slate-700/50 border border-slate-200 dark:border-slate-700 transition-all cursor-pointer flex items-center justify-between group shrink-0"
+                >
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className={`mt-0.5 p-2 rounded-lg ${
+                      event.severity === 'CRITICAL' ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-400' :
+                      event.severity === 'HIGH' ? 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400' : 'bg-sky-100 dark:bg-sky-950 text-[#0284c7] dark:text-sky-400'
+                    }`}>
+                      {event.type === 'DEFECT' ? <AlertTriangle className="w-4 h-4" /> :
+                       event.type === 'TRAFFIC' ? <TrafficCone className="w-4 h-4" /> : <ShieldAlert className="w-4 h-4" />}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-[#0284c7] dark:group-hover:text-sky-400 transition-colors truncate">
+                        {event.title}
+                      </p>
+                      <p className="text-[11px] text-slate-600 dark:text-slate-300 truncate">{event.location}</p>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">{event.bus} • Conf: {event.confidence}</p>
+                    </div>
+                  </div>
+
+                  <div className="text-right flex flex-col items-end shrink-0">
+                    <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400">{event.time}</span>
+                    <span className={`mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                      event.severity === 'CRITICAL' ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800' :
+                      event.severity === 'HIGH' ? 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+                    }`}>
+                      {event.severity}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

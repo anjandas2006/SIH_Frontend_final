@@ -1,18 +1,16 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 
 function getWebSocketUrl(path: string): string {
-  // In dev, use local proxy if on localhost
-  if (import.meta.env.DEV) {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host = window.location.host;
-    return `${protocol}//${host}${path}`;
-  }
-
-  // Explicit WS URL override
+  // Explicit WS URL override (e.g. ws://127.0.0.1:8000)
   const wsEnv = import.meta.env.VITE_WS_URL;
   if (wsEnv) {
     const clean = wsEnv.replace(/\/$/, '');
     return `${clean}${path.startsWith('/') ? '' : '/'}${path}`;
+  }
+
+  // In dev, connect directly to local FastAPI backend on port 8000
+  if (import.meta.env.DEV) {
+    return `ws://127.0.0.1:8000${path.startsWith('/') ? '' : '/'}${path}`;
   }
 
   // Derive from backend URL

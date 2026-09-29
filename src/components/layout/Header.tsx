@@ -89,17 +89,17 @@ export const Header: React.FC = () => {
 
         {/* Dynamic Status Badges depending on Live vs Demo Mode */}
         {systemMode === 'live' ? (
-          <div className="hidden xl:flex items-center gap-2 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 px-2.5 py-1 rounded-full">
-            <span className="w-2 h-2 rounded-full bg-rose-600 dark:bg-rose-400 animate-ping"></span>
-            <span className="text-[11px] font-bold text-rose-700 dark:text-rose-300 uppercase tracking-wider">
-              Live Standby (Not Connected)
+          <div className="hidden xl:flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 px-2.5 py-1 rounded-full">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+            <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider">
+              Live Edge Standby (0 Incidents • Corridors Clear)
             </span>
           </div>
         ) : (
-          <div className="hidden xl:flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 px-2.5 py-1 rounded-full">
-            <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400 radar-dot"></span>
-            <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider">
-              Demo Simulation Active
+          <div className="hidden xl:flex items-center gap-2 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800/60 px-2.5 py-1 rounded-full">
+            <span className="w-2 h-2 rounded-full bg-[#0284c7] radar-dot"></span>
+            <span className="text-[11px] font-bold text-[#0284c7] dark:text-sky-300 uppercase tracking-wider">
+              Demo Simulation Active (20 Units Moving)
             </span>
           </div>
         )}

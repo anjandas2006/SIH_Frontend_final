@@ -42,16 +42,14 @@ export const Sidebar: React.FC = () => {
     {
       to: '/road-intelligence',
       label: 'Road, Traffic & Incidents',
-      description: 'Merged defects, traffic & hit-and-run',
-      icon: ShieldAlert,
-      tag: 'MERGED'
+      description: 'Defects, traffic & hit-and-run',
+      icon: ShieldAlert
     },
     {
       to: '/analytics-reports',
       label: 'Analytics & Reports',
       description: 'Trends, OD flow & UKPMS export',
-      icon: BarChart3,
-      tag: 'MERGED'
+      icon: BarChart3
     },
   ];
 
@@ -102,11 +100,6 @@ export const Sidebar: React.FC = () => {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
                   <span className="truncate">{item.label}</span>
-                  {item.tag && (
-                    <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-amber-50 dark:bg-amber-950/80 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 font-bold">
-                      {item.tag}
-                    </span>
-                  )}
                 </div>
                 <p className="text-[10px] text-slate-500 dark:text-slate-400 font-normal truncate mt-0.5">
                   {item.description}
